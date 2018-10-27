@@ -65,8 +65,9 @@
 
 //note type
 120     FILE    "Pic/normal.png"
-121     FILE    "Pic/long.png"
-122     FILE    "Pic/bpm.png"
+121     FILE    "Pic/flick.png"
+122     FILE    "Pic/slide.png"
+123     FILE    "Pic/option.png"
 
 //move measure
 130     FILE    "Pic/prev.png"
