@@ -5,6 +5,7 @@ void update();
 void draw();
 void drawEdit(int sX,int sY);
 
+int lcm(int, int);
 void import(String path);
 void saveFile(String path);
 
@@ -96,6 +97,16 @@ public:
   std::vector<std::vector<Rect>> draw;
 };
 
+class FileOption {
+public:
+  FileOption() {};
+  FileOption(String name, String text) { this->name = name; this->text = text; };
+  String name;
+  String text;
+};
+
+std::vector<FileOption> fileOptions;
+std::array<String,11> optionNames= { L"TITLE", L"SUBTITLE", L"ARTIST", L"BPM", L"JACKET", L"MUSIC", L"DIFFICULTY", L"MOVIE", L"OFFSET",L"SELECTOFFSET",L"SELECTLONG"};
 
 std::vector<Measure> measures;
 int currentMeasure = 0;
@@ -375,6 +386,7 @@ void Main(){
 
         cN.push_back(NormalNote(currentSplit,currentY,currentX,width,normalGUI.toggleSwitch(L"isEx").isRight));
 
+        /*
         printf("--nN--\n");
         printf("split:%d\n", cN[cN.size() - 1].split);
         printf("Y:%d\n", cN[cN.size() - 1].y);
@@ -382,6 +394,7 @@ void Main(){
         printf("Width:%d\n", cN[cN.size() - 1].width);
         printf("isEx:%d\n", cN[cN.size() - 1].isEx);
         printf("------\n");
+        */
 
         normalFlag = false;
         normalGUI.show(false);
@@ -423,6 +436,7 @@ void Main(){
 
         cS.push_back(SlideNote(currentSplit,currentY,currentX,endLane,startWidth, endWidth,lsplit, length,!slideGUI.toggleSwitch(L"isTap").isRight));
 
+        /*
         printf("--sN--\n");
         printf("split:%d\n", cS[cS.size() - 1].split);
         printf("Y:%d\n", cS[cS.size() - 1].y);
@@ -434,6 +448,7 @@ void Main(){
         printf("length:%d\n", cS[cS.size() - 1].length);
         printf("isTap:%d\n", cS[cS.size() - 1].isTap);
         printf("------\n");
+        */
 
         slideFlag = false;
         slideGUI.show(false);
@@ -455,12 +470,14 @@ void Main(){
 
         cF.push_back(FlickNote(currentSplit, currentY, currentX, width));
 
+        /*
         printf("--fN--\n");
         printf("split:%d\n", cF[cF.size() - 1].split);
         printf("Y:%d\n", cF[cF.size() - 1].y);
         printf("X:%d\n", cF[cF.size() - 1].x);
         printf("Width:%d\n", cF[cF.size() - 1].width);
         printf("------\n");
+        */
 
         flickFlag = false;
         flickGUI.show(false);
@@ -499,12 +516,14 @@ void Main(){
           cP.push_back(PedalNote(currentSplit, currentY, 0, 0));
         }
 
+        /*
         printf("--sN--\n");
         printf("split:%d\n", cP[cP.size() - 1].split);
         printf("Y:%d\n", cP[cP.size() - 1].y);
         printf("lSplit:%d\n", cP[cP.size() - 1].longSplit);
         printf("length:%d\n", cP[cP.size() - 1].length);
         printf("------\n");
+        */
 
         pedalFlag = false;
         pedalGUI.show(false);
@@ -937,68 +956,6 @@ void update() {
       break;
     }
   }
-
-  /*
-  //bpm変化追加・削除処理
-  if (noteType == 2) {
-    if (split % 3 == 0) {
-      for (int i = 0; i < 24; ++i) {
-        for (int j = 0; j < 17; ++j) {
-          if (edit24.click[i][j].leftClicked) {
-            int index = (i / (24 / split))*(24 / split);
-            auto & cM = measures[currentMeasure];
-
-            if (edit24.isBpmClicked[index]) {
-              //対応するbpm変化を削除
-              for (int k = 0; k < cM.bpms.size(); ++k) {
-                auto &cB = cM.bpms[k];
-                if (index == ((24 / cB.split)*cB.y)) {
-                  cM.bpms.erase(cM.bpms.begin() + k);
-                  break;
-                }
-              }
-            }
-            else {
-              bpmY = i / (24 / split);
-              bpmFlag = true;
-              bpmGUI.show(true);
-            }
-            //isClickedを反転
-            edit24.isBpmClicked[index] = !edit24.isBpmClicked[index];
-          }
-        }
-      }
-    }
-    else {
-      for (int i = 0; i < 32; ++i) {
-        for (int j = 0; j < 17; ++j) {
-          if (edit32.click[i][j].leftClicked) {
-            int index = (i / (32 / split))*(32 / split);
-            auto & cM = measures[currentMeasure];
-
-            if (edit32.isBpmClicked[index]) {
-              //対応するbpm変化を削除
-              for (int k = 0; k < cM.bpms.size(); ++k) {
-                auto &cB = cM.bpms[k];
-                if (index == ((32 / cB.split)*cB.y)) {
-                  cM.bpms.erase(cM.bpms.begin() + k);
-                  break;
-                }
-              }
-            }
-            else {
-              bpmY = i / (32 / split);
-              bpmFlag = true;
-              bpmGUI.show(true);
-            }
-            //isClickedを反転
-            edit32.isBpmClicked[index] = !edit32.isBpmClicked[index];
-          }
-        }
-      }
-    }
-  }
-  */
 }
 
 void draw() {
@@ -1226,10 +1183,398 @@ void jumpMeasure(int measure) {
   }
 }
 
+int lcm(int n1,int n2) {
+  if (n1 > n2) std::swap(n1, n2);
+  int x = n1 * n2;
+  int r = n2 % n1;
+  while (r != 0) {
+    n2 = n1;
+    n1 = r;
+    r = n2 % n1;
+  }
+
+  return x / n1;
+}
+
 void import(String path) {
- 
+  XMLReader reader(path);
+  auto el = reader.root().firstChild();
+
+  //ファイル開けなかったとき
+  if (!reader.isValid()) {
+    return;
+  }
+
+  fileOptions.clear();
+  while (el.name() != L"NOTES") {
+    fileOptions.push_back(FileOption(el.name(),el.text()));
+    el = el.nextSibling();
+  }
+
+  std::vector<std::vector<String>> line;
+  //小節
+  for (auto &i : el.text().split(L'@')) {
+    std::vector<String> tmp;
+    //拍
+    for (auto &j : i.split(L';')) {
+      tmp.push_back(j);
+    }
+    line.push_back(tmp);
+  }
+
+  //最後の要素は最後の;の後だからない
+  measures.resize(line.size());
+
+  for (int i = 0; i < line.size() - 1;++i) {
+    //最後の要素は最後の@の後だからない
+    for (int j = 0; j < line[i].size() - 1;++j){
+      auto content = line[i][j].split(L'{');
+      printf("------------------\n");
+
+      for (int k = 0; k < content.size(); ++k) {
+        if (content[k].length < 5) {
+          continue;
+        }
+
+        printf("content[%d]:\"%s\"\n", k, content[k].narrow().c_str());
+        if (content[k].includes(L"|")) {
+          Option tmp;
+
+          auto opts = content[k].split(L'|');
+
+          for (int l = 1; l < opts.size() - 1; ++l) {
+            int n[3];
+            sscanf_s(opts[l].narrow().c_str(), "%d,%d,%d", &n[0], &n[1], &n[2]);
+            printf("%d %d %d\n", n[0], n[1], n[2]);
+
+            if (n[0] == 1) {
+              tmp.isStop = true;
+              tmp.stopSplit = n[1];
+              tmp.stopLength = n[2];
+            }
+
+            if (n[0] == 2) {
+              tmp.isBpm = true;
+              tmp.bpm = n[1];
+            }
+
+            if (n[0] == 3) {
+              tmp.isBeat = true;
+              tmp.beatSplit = n[1];
+              tmp.beat = n[2];
+            }
+
+          }
+
+          if (line[i].size() - 1 == 48) {
+            if (j % (48 / 16) == 0) {
+              tmp.split = 16;
+              tmp.y = j / (48 / 16);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (48 / 24);
+            }
+          }
+          else if (line[i].size() - 1 == 96) {
+            if (j % (96 / 32) == 0) {
+              tmp.split = 32;
+              tmp.y = j / (96 / 32);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (96 / 24);
+            }
+          }
+          else {
+            tmp.split = line[i].size() - 1;
+            tmp.y = j;
+          }
+
+          measures[i].options.push_back(tmp);
+        }
+        else if (content[k].includes(L"[")) {
+          PedalNote tmp;
+
+          int n[3];
+
+          sscanf_s(content[k].narrow().c_str(), "[%d,%d,%d]", &n[0], &n[1], &n[2]);
+          printf("%d %d %d\n", n[0], n[1], n[2]);
+
+          if (n[0] == 1) {
+            tmp.longSplit = 0;
+            tmp.length = 0;
+          }
+          else {
+            tmp.longSplit = n[1];
+            tmp.length = n[2];
+          }
+
+          if (line[i].size() - 1 == 48) {
+            if (j % (48 / 16) == 0) {
+              tmp.split = 16;
+              tmp.y = j / (48 / 16);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (48 / 24);
+            }
+          }
+          else if (line[i].size() - 1 == 96) {
+            if (j % (96 / 32) == 0) {
+              tmp.split = 32;
+              tmp.y = j / (96 / 32);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (96 / 24);
+            }
+          }
+          else {
+            tmp.split = line[i].size() - 1;
+            tmp.y = j;
+          }
+
+          measures[i].pedalNotes.push_back(tmp);
+
+
+        }
+        else {
+          int n[7];
+          sscanf_s(content[k].narrow().c_str(), "%d,%d,%d,%d,%d,%d,%d}", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6]);
+          printf("%d %d %d %d %d %d %d\n", n[0], n[1], n[2], n[3], n[4], n[5], n[6]);
+
+
+          if (n[1] == 1) {
+            NormalNote tmp;
+            tmp.x = n[0] - 1;
+            tmp.width = n[2];
+            tmp.isEx = n[3];
+
+            if (line[i].size() - 1 == 48) {
+              if (j % (48 / 16) == 0) {
+                tmp.split = 16;
+                tmp.y = j / (48 / 16);
+              }
+              else {
+                tmp.split = 24;
+                tmp.y = j / (48 / 24);
+              }
+            }
+            else if (line[i].size() - 1 == 96) {
+              if (j % (96 / 32) == 0) {
+                tmp.split = 32;
+                tmp.y = j / (96 / 32);
+              }
+              else {
+                tmp.split = 24;
+                tmp.y = j / (96 / 24);
+              }
+            }
+            else {
+              tmp.split = line[i].size() - 1;
+              tmp.y = j;
+            }
+
+            measures[i].normalNotes.push_back(tmp);
+          }
+          else if (n[1] == 2 || n[1] == 3) {
+            SlideNote tmp;
+            tmp.startX = n[0] - 1;
+            tmp.startWidth = n[2];
+            tmp.endWidth = n[3];
+            tmp.endX = n[4] - 1;
+            tmp.longSplit = n[5];
+            tmp.length = n[6];
+
+            tmp.isTap = (n[1] == 2) ? true : false;
+
+            if (line[i].size() - 1 == 48) {
+              if (j % (48 / 16) == 0) {
+                tmp.split = 16;
+                tmp.y = j / (48 / 16);
+              }
+              else {
+                tmp.split = 24;
+                tmp.y = j / (48 / 24);
+              }
+            }
+            else if (line[i].size() - 1 == 96) {
+              if (j % (96 / 32) == 0) {
+                tmp.split = 32;
+                tmp.y = j / (96 / 32);
+              }
+              else {
+                tmp.split = 24;
+                tmp.y = j / (96 / 24);
+              }
+            }
+            else {
+              tmp.split = line[i].size() - 1;
+              tmp.y = j;
+
+            }
+            measures[i].slideNotes.push_back(tmp);
+          }
+          else if (n[1] == 4) {
+            FlickNote tmp;
+
+            tmp.x = n[0] -1;
+            tmp.width = n[2];
+
+            if (line[i].size() - 1 == 48) {
+              if (j % (48 / 16) == 0) {
+                tmp.split = 16;
+                tmp.y = j / (48 / 16);
+              }
+              else {
+                tmp.split = 24;
+                tmp.y = j / (48 / 24);
+              }
+            }
+            else if (line[i].size() - 1 == 96) {
+              if (j % (96 / 32) == 0) {
+                tmp.split = 32;
+                tmp.y = j / (96 / 32);
+              }
+              else {
+                tmp.split = 24;
+                tmp.y = j / (96 / 24);
+              }
+            }
+            else {
+              tmp.split = line[i].size() - 1;
+              tmp.y = j;
+            }
+
+            measures[i].flickNotes.push_back(tmp);
+          }
+        }
+      }
+    }
+  }
 }
 
 void saveFile(String path) {
+  TextWriter writer(path);
+  if (writer.isOpened()) {
 
+    writer.writeln(L"﻿<MusicData>");
+
+    if (fileOptions.size() != 0) {
+      for (const auto &i : fileOptions) {
+        writer.writeln(L"  <" + i.name + L">" + i.text + L"</" + i.name + L">");
+        
+      }
+    }
+    else {
+      for (const auto &i : optionNames) {
+        writer.writeln(L"  <" + i + L">" + L"</" + i + L">");
+      }
+    }
+
+    writer.writeln(L"\n  ﻿<NOTES>");
+
+    for (int i = 0; i < measures.size(); ++i) {
+      int max32 = 1, max24 = 1;
+      for (const auto &j : measures[i].normalNotes) {
+        if (j.split % 3 == 0) max24 = std::max<int>(j.split,max24);
+        else max32 = std::max<int>(j.split, max32);
+      }
+      for (const auto &j : measures[i].flickNotes) {
+        if (j.split % 3 == 0) max24 = std::max<int>(j.split, max24);
+        else max32 = std::max<int>(j.split, max32);
+      }
+      for (const auto &j : measures[i].slideNotes) {
+        if (j.split % 3 == 0) max24 = std::max<int>(j.split, max24);
+        else max32 = std::max<int>(j.split, max32);
+      }
+      for (const auto &j : measures[i].pedalNotes) {
+        if (j.split % 3 == 0) max24 = std::max<int>(j.split, max24);
+        else max32 = std::max<int>(j.split, max32);
+      }
+      for (const auto &j : measures[i].options) {
+        if (j.split % 3 == 0) max24 = std::max<int>(j.split, max24);
+        else max32 = std::max<int>(j.split, max32);
+      }
+
+      int outputSplit = lcm(max24, max32);
+
+      //行
+      for (int j = 0; j < outputSplit; ++j) {
+        writer.write(L"    ");
+
+        //オプションの出力
+        for (const auto &k : measures[i].options) {
+          if (k.y * (outputSplit / k.split) == j) {
+            bool outputFlag = false;
+            if (k.isStop) {
+              writer.write(L"|1," + ToString(k.stopSplit) + L"," + ToString(k.stopLength));
+              outputFlag = true;
+            }
+            if (k.isBpm) {
+              writer.write(L"|2," + ToString(static_cast<int>(k.bpm)) + L",0");
+              outputFlag = true;
+            }
+            if (k.isBeat) {
+              writer.write(L"|3," + ToString(k.beatSplit) + L"," + ToString(k.beat));
+              outputFlag = true;
+            }
+
+            if (outputFlag) {
+              writer.write(L"|");
+            }
+
+          }
+        }
+
+        //ノーツの出力
+        std::array<String, 16> tmp = { L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L""};
+        for (const auto &k : measures[i].normalNotes) {
+          if (k.y * (outputSplit / k.split) == j) {
+            tmp[k.x] = L"{" + ToString(k.x + 1) + L",1,"+ ToString(k.width) + L"," + ((k.isEx)? L"1": L"0") + L",0,0,0}";
+          }
+        }
+        for (const auto &k : measures[i].flickNotes) {
+          if (k.y * (outputSplit / k.split) == j) {
+            tmp[k.x] = L"{" + ToString(k.x + 1) + L",4," + ToString(k.width) + L",0,0,0,0}";
+          }
+        }
+        for (const auto &k : measures[i].slideNotes) {
+          if (k.y * (outputSplit / k.split) == j) {
+            tmp[k.startX] = L"{" + ToString(k.startX + 1) + ((k.isTap)? L",2," : L",3,") + ToString(k.startWidth) + L"," + ToString(k.endWidth) + L"," +
+              ToString(k.endX + 1) + L"," + ToString(k.longSplit) + L"," + ToString(k.length)  + L"}";
+          }
+        }
+
+        for (const auto &k : tmp) {
+          if (k != L"") {
+            writer.write(k);
+          }
+        }
+
+        //ペダルの出力
+        for (const auto &k : measures[i].pedalNotes) {
+          if (k.y * (outputSplit / k.split) == j) {
+            if (k.longSplit == 0 || k.length == 0) {
+              writer.write(L"[1,0,0]");
+            }
+            else {
+              writer.write(L"[2," + ToString(k.longSplit) + L"," + ToString(k.length) + L"]");
+            }
+            
+          }
+        }
+
+
+        if (j == outputSplit - 1) writer.write(L";");
+        else writer.write(L";\n");
+      }
+
+      writer.writeln(L"@");
+    }
+
+    writer.writeln(L"  ﻿</NOTES>");
+    writer.write(L"﻿</MusicData>");
+  }
 }
