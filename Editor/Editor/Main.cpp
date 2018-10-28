@@ -1507,22 +1507,14 @@ void saveFile(String path) {
         //オプションの出力
         for (const auto &k : measures[i].options) {
           if (k.y * (outputSplit / k.split) == j) {
-            bool outputFlag = false;
             if (k.isStop) {
-              writer.write(L"|1," + ToString(k.stopSplit) + L"," + ToString(k.stopLength));
-              outputFlag = true;
+              writer.write(L"|1," + ToString(k.stopSplit) + L"," + ToString(k.stopLength) + L"|");
             }
             if (k.isBpm) {
-              writer.write(L"|2," + ToString(static_cast<int>(k.bpm)) + L",0");
-              outputFlag = true;
+              writer.write(L"|2," + ToString(static_cast<int>(k.bpm)) + L",0|");
             }
             if (k.isBeat) {
-              writer.write(L"|3," + ToString(k.beatSplit) + L"," + ToString(k.beat));
-              outputFlag = true;
-            }
-
-            if (outputFlag) {
-              writer.write(L"|");
+              writer.write(L"|3," + ToString(k.beatSplit) + L"," + ToString(k.beat) + L"|");
             }
 
           }
