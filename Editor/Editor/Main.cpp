@@ -1526,27 +1526,27 @@ void saveFile(String path) {
         }
 
         //ノーツの出力
-        std::array<String, 16> tmp = { L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L""};
+        std::array<std::vector<String>, 16> tmp;
         for (const auto &k : measures[i].normalNotes) {
           if (k.y * (outputSplit / k.split) == j) {
-            tmp[k.x] = L"{" + ToString(k.x + 1) + L",1,"+ ToString(k.width) + L"," + ((k.isEx)? L"1": L"0") + L",0,0,0}";
+            tmp[k.x].push_back(L"{" + ToString(k.x + 1) + L",1,"+ ToString(k.width) + L"," + ((k.isEx)? L"1": L"0") + L",0,0,0}");
           }
         }
         for (const auto &k : measures[i].flickNotes) {
           if (k.y * (outputSplit / k.split) == j) {
-            tmp[k.x] = L"{" + ToString(k.x + 1) + L",4," + ToString(k.width) + L",0,0,0,0}";
+            tmp[k.x].push_back(L"{" + ToString(k.x + 1) + L",4," + ToString(k.width) + L",0,0,0,0}");
           }
         }
         for (const auto &k : measures[i].slideNotes) {
           if (k.y * (outputSplit / k.split) == j) {
-            tmp[k.startX] = L"{" + ToString(k.startX + 1) + ((k.isTap)? L",2," : L",3,") + ToString(k.startWidth) + L"," + ToString(k.endWidth) + L"," +
-              ToString(k.endX + 1) + L"," + ToString(k.longSplit) + L"," + ToString(k.length)  + L"}";
+            tmp[k.startX].push_back(L"{" + ToString(k.startX + 1) + ((k.isTap)? L",2," : L",3,") + ToString(k.startWidth) + L"," + ToString(k.endWidth) + L"," +
+              ToString(k.endX + 1) + L"," + ToString(k.longSplit) + L"," + ToString(k.length)  + L"}");
           }
         }
 
         for (const auto &k : tmp) {
-          if (k != L"") {
-            writer.write(k);
+          for(const auto &l: k){
+            writer.write(l);
           }
         }
 
