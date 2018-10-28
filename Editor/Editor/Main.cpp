@@ -1225,89 +1225,48 @@ void import(String path) {
   //最後の要素は最後の;の後だからない
   measures.resize(line.size());
 
-  for (int i = 0; i < line.size() - 1;++i) {
-    //最後の要素は最後の@の後だからない
-    for (int j = 0; j < line[i].size() - 1;++j){
-      auto content = line[i][j].split(L'{');
-      printf("------------------\n");
+  for (int i = 0; i < line.size() - 1; ++i) {
+    for (int j = 0; j < line[i].size() - 1; ++j) {
+      std::smatch results;
+      std::string target = line[i][j].narrow();
 
-      for (int k = 0; k < content.size(); ++k) {
-        if (content[k].length < 5) {
-          continue;
-        }
+      String optionStr = L"", noteStr = L"", pedalStr = L"";
 
-        printf("content[%d]:\"%s\"\n", k, content[k].narrow().c_str());
-        if (content[k].includes(L"|")) {
-          Option tmp;
+      if (std::regex_match(target, results, 
+        std::regex(R"( *((?:\|.+\|)*){0,1}((?:\{.+\})*){0,1}((?:\[.+\])*){0,1})"))) {
+        optionStr =Widen(results[1].str());
+        noteStr = Widen(results[2].str());
+        pedalStr = Widen(results[3].str());
+      }
+      else {
+        continue;
+      }
+      
+      if (optionStr.length > 5) {
+        Option tmp;
 
-          auto opts = content[k].split(L'|');
+        auto options = optionStr.split(L'|');
 
-          for (int l = 1; l < opts.size() - 1; ++l) {
-            int n[3];
-            sscanf_s(opts[l].narrow().c_str(), "%d,%d,%d", &n[0], &n[1], &n[2]);
-            printf("%d %d %d\n", n[0], n[1], n[2]);
-
-            if (n[0] == 1) {
-              tmp.isStop = true;
-              tmp.stopSplit = n[1];
-              tmp.stopLength = n[2];
-            }
-
-            if (n[0] == 2) {
-              tmp.isBpm = true;
-              tmp.bpm = n[1];
-            }
-
-            if (n[0] == 3) {
-              tmp.isBeat = true;
-              tmp.beatSplit = n[1];
-              tmp.beat = n[2];
-            }
-
-          }
-
-          if (line[i].size() - 1 == 48) {
-            if (j % (48 / 16) == 0) {
-              tmp.split = 16;
-              tmp.y = j / (48 / 16);
-            }
-            else {
-              tmp.split = 24;
-              tmp.y = j / (48 / 24);
-            }
-          }
-          else if (line[i].size() - 1 == 96) {
-            if (j % (96 / 32) == 0) {
-              tmp.split = 32;
-              tmp.y = j / (96 / 32);
-            }
-            else {
-              tmp.split = 24;
-              tmp.y = j / (96 / 24);
-            }
-          }
-          else {
-            tmp.split = line[i].size() - 1;
-            tmp.y = j;
-          }
-
-          measures[i].options.push_back(tmp);
-        }
-        else if (content[k].includes(L"[")) {
-          PedalNote tmp;
-
+        for (int k = 1; k < options.size(); k += 2) {
           int n[3];
-
-          sscanf_s(content[k].narrow().c_str(), "[%d,%d,%d]", &n[0], &n[1], &n[2]);
+          sscanf_s(options[k].narrow().c_str(), "%d,%d,%d", &n[0], &n[1], &n[2]);
           printf("%d %d %d\n", n[0], n[1], n[2]);
 
           if (n[0] == 1) {
-            tmp.longSplit = 0;
-            tmp.length = 0;
+            tmp.isStop = true;
+            tmp.stopSplit = n[1];
+            tmp.stopLength = n[2];
           }
-          else {
-            tmp.longSplit = n[1];
-            tmp.length = n[2];
+
+          if (n[0] == 2) {
+            tmp.isBpm = true;
+            tmp.bpm = n[1];
+          }
+
+          if (n[0] == 3) {
+            tmp.isBeat = true;
+            tmp.beatSplit = n[1];
+            tmp.beat = n[2];
           }
 
           if (line[i].size() - 1 == 48) {
@@ -1334,122 +1293,168 @@ void import(String path) {
             tmp.split = line[i].size() - 1;
             tmp.y = j;
           }
+        }
 
-          measures[i].pedalNotes.push_back(tmp);
+        measures[i].options.push_back(tmp);
+      }
+
+      auto notes = noteStr.split(L'{');
+      for (int k = 1; k < notes.size(); ++k) {
+
+        int n[7];
+        sscanf_s(notes[k].narrow().c_str(), "%d,%d,%d,%d,%d,%d,%d}", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6]);
+        printf("%d %d %d %d %d %d %d\n", n[0], n[1], n[2], n[3], n[4], n[5], n[6]);
 
 
+        if (n[1] == 1) {
+          NormalNote tmp;
+          tmp.x = n[0] - 1;
+          tmp.width = n[2];
+          tmp.isEx = n[3];
+
+          if (line[i].size() - 1 == 48) {
+            if (j % (48 / 16) == 0) {
+              tmp.split = 16;
+              tmp.y = j / (48 / 16);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (48 / 24);
+            }
+          }
+          else if (line[i].size() - 1 == 96) {
+            if (j % (96 / 32) == 0) {
+              tmp.split = 32;
+              tmp.y = j / (96 / 32);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (96 / 24);
+            }
+          }
+          else {
+            tmp.split = line[i].size() - 1;
+            tmp.y = j;
+          }
+
+          measures[i].normalNotes.push_back(tmp);
+        }
+        else if (n[1] == 2 || n[1] == 3) {
+          SlideNote tmp;
+          tmp.startX = n[0] - 1;
+          tmp.startWidth = n[2];
+          tmp.endWidth = n[3];
+          tmp.endX = n[4] - 1;
+          tmp.longSplit = n[5];
+          tmp.length = n[6];
+
+          tmp.isTap = (n[1] == 2) ? true : false;
+
+          if (line[i].size() - 1 == 48) {
+            if (j % (48 / 16) == 0) {
+              tmp.split = 16;
+              tmp.y = j / (48 / 16);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (48 / 24);
+            }
+          }
+          else if (line[i].size() - 1 == 96) {
+            if (j % (96 / 32) == 0) {
+              tmp.split = 32;
+              tmp.y = j / (96 / 32);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (96 / 24);
+            }
+          }
+          else {
+            tmp.split = line[i].size() - 1;
+            tmp.y = j;
+
+          }
+          measures[i].slideNotes.push_back(tmp);
+        }
+        else if (n[1] == 4) {
+          FlickNote tmp;
+
+          tmp.x = n[0] - 1;
+          tmp.width = n[2];
+
+          if (line[i].size() - 1 == 48) {
+            if (j % (48 / 16) == 0) {
+              tmp.split = 16;
+              tmp.y = j / (48 / 16);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (48 / 24);
+            }
+          }
+          else if (line[i].size() - 1 == 96) {
+            if (j % (96 / 32) == 0) {
+              tmp.split = 32;
+              tmp.y = j / (96 / 32);
+            }
+            else {
+              tmp.split = 24;
+              tmp.y = j / (96 / 24);
+            }
+          }
+          else {
+            tmp.split = line[i].size() - 1;
+            tmp.y = j;
+          }
+
+          measures[i].flickNotes.push_back(tmp);
+        }
+      }
+
+      if (pedalStr.length > 5) {
+        PedalNote tmp;
+
+        int n[3];
+
+        sscanf_s(pedalStr.narrow().c_str(), "[%d,%d,%d]", &n[0], &n[1], &n[2]);
+        printf("%d %d %d\n", n[0], n[1], n[2]);
+
+        if (n[0] == 1) {
+          tmp.longSplit = 0;
+          tmp.length = 0;
         }
         else {
-          int n[7];
-          sscanf_s(content[k].narrow().c_str(), "%d,%d,%d,%d,%d,%d,%d}", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6]);
-          printf("%d %d %d %d %d %d %d\n", n[0], n[1], n[2], n[3], n[4], n[5], n[6]);
+          tmp.longSplit = n[1];
+          tmp.length = n[2];
+        }
 
-
-          if (n[1] == 1) {
-            NormalNote tmp;
-            tmp.x = n[0] - 1;
-            tmp.width = n[2];
-            tmp.isEx = n[3];
-
-            if (line[i].size() - 1 == 48) {
-              if (j % (48 / 16) == 0) {
-                tmp.split = 16;
-                tmp.y = j / (48 / 16);
-              }
-              else {
-                tmp.split = 24;
-                tmp.y = j / (48 / 24);
-              }
-            }
-            else if (line[i].size() - 1 == 96) {
-              if (j % (96 / 32) == 0) {
-                tmp.split = 32;
-                tmp.y = j / (96 / 32);
-              }
-              else {
-                tmp.split = 24;
-                tmp.y = j / (96 / 24);
-              }
-            }
-            else {
-              tmp.split = line[i].size() - 1;
-              tmp.y = j;
-            }
-
-            measures[i].normalNotes.push_back(tmp);
+        if (line[i].size() - 1 == 48) {
+          if (j % (48 / 16) == 0) {
+            tmp.split = 16;
+            tmp.y = j / (48 / 16);
           }
-          else if (n[1] == 2 || n[1] == 3) {
-            SlideNote tmp;
-            tmp.startX = n[0] - 1;
-            tmp.startWidth = n[2];
-            tmp.endWidth = n[3];
-            tmp.endX = n[4] - 1;
-            tmp.longSplit = n[5];
-            tmp.length = n[6];
-
-            tmp.isTap = (n[1] == 2) ? true : false;
-
-            if (line[i].size() - 1 == 48) {
-              if (j % (48 / 16) == 0) {
-                tmp.split = 16;
-                tmp.y = j / (48 / 16);
-              }
-              else {
-                tmp.split = 24;
-                tmp.y = j / (48 / 24);
-              }
-            }
-            else if (line[i].size() - 1 == 96) {
-              if (j % (96 / 32) == 0) {
-                tmp.split = 32;
-                tmp.y = j / (96 / 32);
-              }
-              else {
-                tmp.split = 24;
-                tmp.y = j / (96 / 24);
-              }
-            }
-            else {
-              tmp.split = line[i].size() - 1;
-              tmp.y = j;
-
-            }
-            measures[i].slideNotes.push_back(tmp);
-          }
-          else if (n[1] == 4) {
-            FlickNote tmp;
-
-            tmp.x = n[0] -1;
-            tmp.width = n[2];
-
-            if (line[i].size() - 1 == 48) {
-              if (j % (48 / 16) == 0) {
-                tmp.split = 16;
-                tmp.y = j / (48 / 16);
-              }
-              else {
-                tmp.split = 24;
-                tmp.y = j / (48 / 24);
-              }
-            }
-            else if (line[i].size() - 1 == 96) {
-              if (j % (96 / 32) == 0) {
-                tmp.split = 32;
-                tmp.y = j / (96 / 32);
-              }
-              else {
-                tmp.split = 24;
-                tmp.y = j / (96 / 24);
-              }
-            }
-            else {
-              tmp.split = line[i].size() - 1;
-              tmp.y = j;
-            }
-
-            measures[i].flickNotes.push_back(tmp);
+          else {
+            tmp.split = 24;
+            tmp.y = j / (48 / 24);
           }
         }
+        else if (line[i].size() - 1 == 96) {
+          if (j % (96 / 32) == 0) {
+            tmp.split = 32;
+            tmp.y = j / (96 / 32);
+          }
+          else {
+            tmp.split = 24;
+            tmp.y = j / (96 / 24);
+          }
+        }
+        else {
+          tmp.split = line[i].size() - 1;
+          tmp.y = j;
+        }
+
+        measures[i].pedalNotes.push_back(tmp);
       }
     }
   }
