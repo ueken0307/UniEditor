@@ -1478,7 +1478,8 @@ void saveFile(String path) {
       }
     }
 
-    writer.writeln(L"\n  ﻿<NOTES>");
+    writer.writeln(L"");
+    writer.writeln(L"  ﻿<NOTES>");
 
     for (int i = 0; i < measures.size(); ++i) {
       if (measures[i].normalNotes.size() == 0 &&
@@ -1592,7 +1593,7 @@ void saveFile(String path) {
 
 
         if (j == outputSplit - 1) writer.write(L";");
-        else writer.write(L";\n");
+        else writer.writeln(L";");
       }
 
       writer.writeln(L"@");
