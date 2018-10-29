@@ -1464,7 +1464,7 @@ void saveFile(String path) {
   TextWriter writer(path);
   if (writer.isOpened()) {
 
-    writer.writeln(L"﻿<MusicData>");
+    writer.writeln(L"<MusicData>");
 
     if (fileOptions.size() != 0) {
       for (const auto &i : fileOptions) {
@@ -1479,7 +1479,7 @@ void saveFile(String path) {
     }
 
     writer.writeln(L"");
-    writer.writeln(L"  ﻿<NOTES>");
+    writer.writeln(L"  <NOTES>");
 
     for (int i = 0; i < measures.size(); ++i) {
       if (measures[i].normalNotes.size() == 0 &&
@@ -1599,7 +1599,7 @@ void saveFile(String path) {
       writer.writeln(L"@");
     }
 
-    writer.writeln(L"  ﻿</NOTES>");
-    writer.write(L"﻿</MusicData>");
+    writer.writeln(L"  </NOTES>");
+    writer.write(L"</MusicData>");
   }
 }
