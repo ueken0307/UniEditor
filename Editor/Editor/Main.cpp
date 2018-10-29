@@ -1481,6 +1481,33 @@ void saveFile(String path) {
     writer.writeln(L"\n  ﻿<NOTES>");
 
     for (int i = 0; i < measures.size(); ++i) {
+      if (measures[i].normalNotes.size() == 0 &&
+        measures[i].flickNotes.size() == 0 && 
+        measures[i].slideNotes.size() == 0 && 
+        measures[i].pedalNotes.size() == 0 && 
+        measures[i].options.size() == 0) {
+        //その小節に記述するものがないとき
+
+        bool noneNote = true;
+        for (int j = i; j < measures.size(); ++j) {
+          if (measures[j].normalNotes.size() != 0 ||
+            measures[j].flickNotes.size() != 0 ||
+            measures[j].slideNotes.size() != 0 ||
+            measures[j].pedalNotes.size() != 0 ||
+            measures[j].options.size() != 0) {
+            //ノーツが存在するなら
+            noneNote = false;
+            break;
+          }
+        }
+
+        if (noneNote) {
+          //以降なにもノーツ内なら書き込み終わり
+          break;
+        }
+
+      }
+
       int max32 = 1, max24 = 1;
       for (const auto &j : measures[i].normalNotes) {
         if (j.split % 3 == 0) max24 = std::max<int>(j.split,max24);
